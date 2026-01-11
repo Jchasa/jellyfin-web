@@ -1,7 +1,3 @@
-import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
-
-import { toApi } from 'utils/jellyfin-apiclient/compat';
-
 import loading from '../../components/loading/loading';
 import keyboardnavigation from '../../scripts/keyboardNavigation';
 import dialogHelper from '../../components/dialogHelper/dialogHelper';
@@ -24,6 +20,8 @@ export class PdfPlayer {
         this.onDialogClosed = this.onDialogClosed.bind(this);
         this.onWindowKeyDown = this.onWindowKeyDown.bind(this);
         this.onTouchStart = this.onTouchStart.bind(this);
+        this.onBtnPrevClick = this.onBtnPrevClick.bind(this);
+        this.onBtnNextClick = this.onBtnNextClick.bind(this);
     }
 
     play(options) {
@@ -129,6 +127,27 @@ export class PdfPlayer {
         }
     }
 
+    onBtnPrevClick(e) {
+        e.preventDefault();
+        if (!this.loaded) return;
+        this.previous();
+    }
+
+    onBtnNextClick(e) {
+        e.preventDefault();
+        if (!this.loaded) return;
+        this.next();
+    }
+
+    updatePageIndicator(pageNumber) {
+        const elem = this.mediaElement;
+        if (!elem) return;
+        const current = elem.querySelector('.pdfplayerCurrentPage');
+        const total = elem.querySelector('.pdfplayerTotalPages');
+        if (current) current.textContent = String(pageNumber);
+        if (total) total.textContent = String(this.duration());
+    }
+
     onDialogClosed() {
         this.stop();
     }
@@ -138,6 +157,8 @@ export class PdfPlayer {
 
         elem.addEventListener('close', this.onDialogClosed, { once: true });
         elem.querySelector('.btnExit').addEventListener('click', this.onDialogClosed, { once: true });
+        elem.querySelector('.btnPrev').addEventListener('click', this.onBtnPrevClick);
+        elem.querySelector('.btnNext').addEventListener('click', this.onBtnNextClick);
     }
 
     bindEvents() {
@@ -152,6 +173,8 @@ export class PdfPlayer {
 
         elem.removeEventListener('close', this.onDialogClosed);
         elem.querySelector('.btnExit').removeEventListener('click', this.onDialogClosed);
+        elem.querySelector('.btnPrev').removeEventListener('click', this.onBtnPrevClick);
+        elem.querySelector('.btnNext').removeEventListener('click', this.onBtnNextClick);
     }
 
     unbindEvents() {
@@ -181,11 +204,18 @@ export class PdfPlayer {
             });
 
             let html = '';
-            html += '<canvas id="canvas"></canvas>';
-            html += '<div class="actionButtons">';
-            html += '<button is="paper-icon-button-light" class="autoSize btnExit" tabindex="-1"><span class="material-icons actionButtonIcon close" aria-hidden="true"></span></button>';
+            html += '<div class="topButtons">';
+            html += '<button is="paper-icon-button-light" class="autoSize pdfplayerButton hide-mouse-idle-tv btnPrev" tabindex="-1" aria-label="Previous page" title="Previous page">';
+            html += '<span class="material-icons pdfplayerButtonIcon navigate_before" aria-hidden="true"></span></button>';
+            html += '<div class="pdfplayerPageIndicator hide-mouse-idle-tv" aria-label="Page indicator">';
+            html += '<span class="pdfplayerCurrentPage">1</span> / <span class="pdfplayerTotalPages">0</span>';
             html += '</div>';
-
+            html += '<button is="paper-icon-button-light" class="autoSize pdfplayerButton hide-mouse-idle-tv btnNext" tabindex="-1" aria-label="Next page" title="Next page">';
+            html += '<span class="material-icons pdfplayerButtonIcon navigate_next" aria-hidden="true"></span></button>';
+            html += '<button is="paper-icon-button-light" class="autoSize pdfplayerButton hide-mouse-idle-tv btnExit" tabindex="-1" aria-label="Close" title="Close">';
+            html += '<span class="material-icons pdfplayerButtonIcon close" aria-hidden="true"></span></button>';
+            html += '</div>';
+            html += '<canvas id="canvas"></canvas>';
             elem.id = 'pdfPlayer';
             elem.innerHTML = html;
 
@@ -209,9 +239,11 @@ export class PdfPlayer {
             }
         };
 
+        const serverId = item.ServerId;
+        const apiClient = ServerConnections.getApiClient(serverId);
+
         return import('pdfjs-dist').then(({ GlobalWorkerOptions, getDocument }) => {
-            const api = toApi(ServerConnections.getApiClient(item));
-            const downloadHref = getLibraryApi(api).getDownloadUrl({ itemId: item.Id });
+            const downloadHref = apiClient.getItemDownloadUrl(item.Id);
 
             this.bindEvents();
             GlobalWorkerOptions.workerSrc = appRouter.baseUrl() + '/libraries/pdf.worker.js';
@@ -254,11 +286,13 @@ export class PdfPlayer {
         Events.trigger(this, 'pause');
     }
 
-    replaceCanvas(canvas) {
+    replaceCanvas(canvas, pageNumber) {
         const old = document.getElementById('canvas');
 
         canvas.id = 'canvas';
         old.parentNode.replaceChild(canvas, old);
+
+        this.updatePageIndicator(pageNumber);
     }
 
     loadPage(number) {
