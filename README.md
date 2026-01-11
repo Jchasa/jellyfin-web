@@ -71,6 +71,32 @@ Jellyfin Web is the frontend used for most of the clients available for end user
    npm run build:development
    ```
 
+## Bigger capability upgrades (roadmap)
+
+### PDF Player (best “reader-like” features)
+
+- Page thumbnails sidebar
+- Outline / TOC (PDF bookmarks)
+- Search inside PDF
+- Zoom controls (fit width / fit page + manual zoom)
+- Text selection layer (pdf.js text layer)
+
+### Comics Player (best “comic-reader” features)
+
+- Smart crop / panel mode (guided view)
+- Better zoom + pan gestures (double-tap zoom, pinch zoom that feels native)
+- Prefetch tuning (performance on huge archives)
+- Per-book settings (remember single vs double-page, LTR/RTL per series)
+
+### Book Player (EPUB)
+
+It’s already the most “complete,” but good upgrades are:
+
+- Font family + line height + margins
+- Theme customization (true sepia / true black)
+- Better TOC UX (search within TOC, current chapter highlight)
+
+
 ## Directory Structure
 
 > [!NOTE]
