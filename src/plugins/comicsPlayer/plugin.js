@@ -1,13 +1,10 @@
-import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { Archive } from 'libarchive.js';
-
-import { ServerConnections } from 'lib/jellyfin-apiclient';
-import { toApi } from 'utils/jellyfin-apiclient/compat';
-
 import loading from '../../components/loading/loading';
+import alert from '../../components/alert';
 import dialogHelper from '../../components/dialogHelper/dialogHelper';
 import keyboardnavigation from '../../scripts/keyboardNavigation';
 import { appRouter } from '../../components/router/appRouter';
+import { ServerConnections } from 'lib/jellyfin-apiclient';
 import * as userSettings from '../../scripts/settings/userSettings';
 import { PluginType } from '../../types/plugin.ts';
 
@@ -291,12 +288,14 @@ export class ComicsPlayer {
 
         loading.show();
 
+        const serverId = item.ServerId;
+        const apiClient = ServerConnections.getApiClient(serverId);
+
         Archive.init({
             workerUrl: appRouter.baseUrl() + '/libraries/worker-bundle.js'
         });
 
-        const api = toApi(ServerConnections.getApiClient(item));
-        const downloadUrl = getLibraryApi(api).getDownloadUrl({ itemId: item.Id });
+        const downloadUrl = apiClient.getItemDownloadUrl(item.Id);
         this.archiveSource = new ArchiveSource(downloadUrl);
 
         //eslint-disable-next-line import/no-unresolved
@@ -353,6 +352,32 @@ export class ComicsPlayer {
                     this.currentPage = this.swiperInstance.activeIndex;
                     Events.trigger(this, 'pause');
                 });
+            })
+            .catch((err) => {
+                loading.hide();
+
+                try {
+                    this.archiveSource?.release();
+                } catch (e) {
+                    // ignore
+                }
+
+                const message = err && err.message ? String(err.message) : String(err);
+                console.error('ComicsPlayer: failed to open archive', err);
+
+                let text = 'The web client could not open this comic archive.';
+                if (message.includes('Prefix found') || message.toLowerCase().includes('rar')) {
+                    text += ' This often happens with some .cbr (RAR) archives (for example “solid” RAR) or with corrupted archives. Converting the book to .cbz (ZIP) usually fixes it.';
+                } else {
+                    text += ' Details: ' + message;
+                }
+
+                alert({
+                    title: 'Unable to open comic',
+                    text
+                });
+
+                this.stop();
             });
     }
 

@@ -2,68 +2,375 @@
     position: relative;
     height: 100%;
     width: 100%;
-    overflow: hidden;
     z-index: 100;
-    background: #fff;
+    background: #111;
 
-    display: flex;
-    flex-direction: column;
+    .pdfChrome {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+    }
+
+    .pdfTopBar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 8px;
+        min-height: 52px;
+        z-index: 1002;
+
+        /* Glassy overlay for readability */
+        background: rgba(0, 0, 0, 0.55);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .pdfTopBarSpacer {
+        flex: 1;
+        min-width: 10px;
+    }
+
+    .pdfIconButton {
+        --mdc-ripple-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .pdfIconButton.is-hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .pdfTextButton,
+    .pdfZoomReadout {
+        appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.10);
+        color: #fff;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pdfTextButton:hover,
+    .pdfZoomReadout:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.26);
+    }
+
+    .pdfTextButton:active,
+    .pdfZoomReadout:active {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .pdfPageIndicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        line-height: 1;
+        color: #fff;
+
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+        white-space: nowrap;
+    }
+
+    .actionButtonIcon {
+        color: #fff;
+        opacity: 0.92;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+    }
+
+    .btnSelect.is-active .actionButtonIcon {
+        opacity: 1;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+    }
+
+    .pdfMain {
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        overflow: hidden;
+    }
+
+    /* Sidebar */
+    .pdfSidebar {
+        width: 320px;
+        max-width: 80vw;
+        min-width: 260px;
+        display: none; /* collapsed by default */
+        flex-direction: column;
+        overflow: hidden;
+
+        background: rgba(0, 0, 0, 0.62);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #fff;
+    }
+
+    &.sidebar-open .pdfSidebar {
+        display: flex;
+    }
+
+    .pdfSidebarTabs {
+        display: flex;
+        gap: 6px;
+        padding: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .pdfSidebarTabButton {
+        flex: 1;
+        appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.10);
+        color: #fff;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    .pdfSidebarTabButton.is-active {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .pdfSidebarBody {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .pdfSidebarPanel {
+        display: none;
+        height: 100%;
+    }
+
+    .pdfSidebarPanel.is-active {
+        display: block;
+    }
+
+    .pdfSidebarEmpty {
+        padding: 12px;
+        opacity: 0.8;
+        font-size: 12px;
+    }
+
+    /* Thumbnails */
+    .pdfThumbList {
+        height: 100%;
+        overflow: auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pdfThumbItem {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 8px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pdfThumbItem:hover {
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .pdfThumbItem.is-current {
+        border-color: rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.14);
+    }
+
+    .pdfThumbCanvasWrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .pdfThumbLabel {
+        margin-top: 6px;
+        font-size: 12px;
+        opacity: 0.9;
+        text-align: center;
+    }
+
+    /* Outline */
+    .pdfOutlineList {
+        height: 100%;
+        overflow: auto;
+        padding: 8px 0;
+    }
+
+    .pdfOutlineItem {
+        padding: 8px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+        border-radius: 10px;
+        margin: 2px 8px;
+    }
+
+    .pdfOutlineItem:hover {
+        background: rgba(255, 255, 255, 0.10);
+    }
+
+    /* Search */
+    .pdfPanelSearch {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .pdfSearchRow {
+        display: flex;
+        gap: 6px;
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        align-items: center;
+    }
+
+    .txtPdfSearch {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        font-size: 13px;
+        outline: none;
+    }
+
+    .txtPdfSearch::placeholder {
+        color: rgba(255, 255, 255, 0.65);
+    }
+
+    .pdfSearchStatus {
+        padding: 8px 10px;
+        font-size: 12px;
+        opacity: 0.85;
+    }
+
+    .pdfSearchResults {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .pdfSearchResult {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 10px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pdfSearchResult:hover {
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .pdfSearchResultPage {
+        font-size: 12px;
+        opacity: 0.85;
+        margin-bottom: 6px;
+    }
+
+    .pdfSearchResultSnippet {
+        font-size: 13px;
+        line-height: 1.35;
+        opacity: 0.95;
+    }
+
+    /* Viewer */
+    .pdfViewport {
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        overflow: auto;
+        background: #111;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .pdfPageContainer {
+        position: relative;
+        margin: 16px;
+    }
 
     #canvas {
         display: block;
-        margin: auto;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+        border-radius: 8px;
+        background: #fff;
     }
 
-    .topButtons {
-        z-index: 1002;
-        width: 100%;
-
+    /* Text layer for selection + search highlights (minimal viewer-style rules) */
+    #textLayer {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-
-        display: flex;
-        align-items: center;
-        padding: 0.5vh 2vw;
-        box-sizing: border-box;
-
-        // "Glass" overlay so controls stay readable on any page background
-        background: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
-        color: #fff;
-
-        // Keep the UI usable while allowing clicks on the buttons
+        inset: 0;
         pointer-events: none;
+        user-select: none;
+        opacity: 0;
+        transform-origin: 0 0;
+        /* pdf.js viewer uses this var to compute selection sizing */
+        --scale-factor: 1;
     }
 
-    .pdfplayerButton {
+    #textLayer.is-visible {
+        opacity: 1;
+    }
+
+    #textLayer.is-selectable {
         pointer-events: auto;
-        margin: 0 0.25rem;
-        border-radius: 999px;
+        user-select: text;
     }
 
-    .pdfplayerButton:focus-visible,
-    .pdfplayerButton:hover {
-        background: rgba(255, 255, 255, 0.12);
+    #textLayer span {
+        color: transparent;
+        position: absolute;
+        transform-origin: 0% 0%;
+        white-space: pre;
+        cursor: text;
     }
 
-    .pdfplayerPageIndicator {
-        flex-grow: 1;
-        text-align: center;
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: inherit;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
-        pointer-events: none;
+    /* Search highlight */
+    #textLayer .pdfSearchHit {
+        background: rgba(255, 235, 59, 0.35);
+        border-radius: 2px;
     }
 
-    .pdfplayerButtonIcon {
-        color: inherit;
-        opacity: 0.95;
-        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+    /* Selection color */
+    #textLayer ::selection {
+        background: rgba(0, 120, 215, 0.35);
     }
 }
