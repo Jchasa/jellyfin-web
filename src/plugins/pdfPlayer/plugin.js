@@ -346,8 +346,7 @@ export class PdfPlayer {
             html += '    <button class="pdfZoomReadout btnZoomReset" tabindex="-1" title="Reset zoom"><span class="txtZoom"></span></button>';
             html += '    <button is="paper-icon-button-light" class="pdfIconButton btnZoomIn" tabindex="-1" title="Zoom in"><span class="material-icons actionButtonIcon" aria-hidden="true">zoom_in</span></button>';
             html += '    <button is="paper-icon-button-light" class="pdfIconButton btnSelect" tabindex="-1" title="Toggle text selection"><span class="material-icons actionButtonIcon" aria-hidden="true">text_fields</span></button>';
-            html += '    <button is="paper-icon-button-light" class="autoSize btnExit" tabindex="-1" title="Close"><span class="material-icons actionButtonIcon close" aria-hidden="true">close</span></button>';
-            html += '  </div>';
+            html += '    <button is="paper-icon-button-light" class="btnExit btnPdfExit" title="Close"><span class="material-icons actionButtonIcon" aria-hidden="true">close</span></button>';            html += '  </div>';
 
             html += '  <div class="pdfMain">';
             html += '    <aside class="pdfSidebar" aria-label="PDF sidebar">';
