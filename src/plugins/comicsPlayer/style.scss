@@ -16,6 +16,9 @@
         height: 100%;
         width: 100%;
         object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+        cursor: default;
     }
 
     .swiper-pagination {
@@ -38,5 +41,13 @@
     .actionButtonIcon {
         color: #000;
         opacity: 0.7;
+    }
+
+    &.isZoomed .swiper-slide-img {
+        cursor: grab;
+    }
+
+    &.isZoomed .swiper-slide-img:active {
+        cursor: grabbing;
     }
 }
