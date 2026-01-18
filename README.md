@@ -62,6 +62,36 @@ It’s already the most “complete,” but good upgrades are:
 
 - changes the triangle “Play” overlay to a book icon and changes the tooltip to “Read” (or “Resume” if there’s a saved position).
 
+### More book custimazation
+
+- For items that are Type=Book/ComicBook/Magazine (or MediaType=Book):
+
+Tooltip/text: Play → Read (or Continue reading when resumable)
+
+Icon swaps based on file format:
+
+PDF → picture_as_pdf
+
+EPUB → auto_stories
+
+CBZ/CBR/CBT/CB7 → collections_bookmark
+
+fallback → menu_book
+
+- Where it applies
+
+Card overlays (legacy cardBuilder.js and the newer React card overlay components)
+
+Hover/fab overlay button
+
+List view image action button
+
+Item context menu (including “Play from here” → “Read from here”)
+
+Item details page play button tooltip + icon
+
+Experimental details page Play/Resume button
+
 ## Build Process
 
 ### Dependencies
