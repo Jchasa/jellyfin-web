@@ -58,6 +58,10 @@ It’s already the most “complete,” but good upgrades are:
 - Theme customization (true sepia / true black)
 - Better TOC UX (search within TOC, current chapter highlight)
 
+### Book library type icon instead of Play Button
+
+- changes the triangle “Play” overlay to a book icon and changes the tooltip to “Read” (or “Resume” if there’s a saved position).
+
 ## Build Process
 
 ### Dependencies
