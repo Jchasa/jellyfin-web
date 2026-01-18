@@ -3,6 +3,7 @@ import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 
 import { AppFeature } from 'constants/appFeature';
 import { toApi } from 'utils/jellyfin-apiclient/compat';
+import { getReadableFromHereLabel, getReadablePrimaryActionUi, isReadableItem } from 'utils/readableActionUi';
 
 import browser from '../scripts/browser';
 import { copy } from '../scripts/clipboard';
@@ -48,22 +49,26 @@ export async function getCommands(options) {
 
     const canPlay = playbackManager.canPlay(item);
 
+    const isReadable = isReadableItem(item);
+    const isResumable = !!(item && item.UserData && item.UserData.PlaybackPositionTicks > 0);
+    const readableUi = isReadable ? getReadablePrimaryActionUi(item, isResumable, globalize) : null;
+
     const commands = [];
 
     if (canPlay && item.MediaType !== 'Photo') {
         if (options.play !== false) {
             commands.push({
-                name: globalize.translate('Play'),
+                name: readableUi ? readableUi.title : globalize.translate('Play'),
                 id: 'resume',
-                icon: 'play_arrow'
+                icon: readableUi ? readableUi.icon : 'play_arrow'
             });
         }
 
         if (options.playAllFromHere && item.Type !== 'Program' && item.Type !== 'TvChannel') {
             commands.push({
-                name: globalize.translate('PlayAllFromHere'),
+                name: readableUi ? getReadableFromHereLabel(globalize) : globalize.translate('PlayAllFromHere'),
                 id: 'playallfromhere',
-                icon: 'play_arrow'
+                icon: readableUi ? 'library_books' : 'play_arrow'
             });
         }
     }

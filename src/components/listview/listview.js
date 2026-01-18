@@ -16,6 +16,7 @@ import mediaInfo from '../mediainfo/mediainfo';
 import indicators from '../indicators/indicators';
 import layoutManager from '../layoutManager';
 import globalize from '../../lib/globalize';
+import { getReadablePrimaryActionUi, isReadableItem } from 'utils/readableActionUi';
 import { ServerConnections } from 'lib/jellyfin-apiclient';
 import datetime from '../../scripts/datetime';
 import cardBuilder from '../cardbuilder/cardBuilder';
@@ -302,7 +303,13 @@ export function getListViewHtml(options) {
             }
 
             if (playOnImageClick) {
-                html += `<button is="paper-icon-button-light" class="listItemImageButton itemAction" data-action="${ItemAction.Resume}"><span class="material-icons listItemImageButton-icon play_arrow" aria-hidden="true"></span></button>`;
+                const isReadable = isReadableItem(item);
+                const isResumable = !!(item.UserData && item.UserData.PlaybackPositionTicks > 0);
+                const readableUi = isReadable ? getReadablePrimaryActionUi(item, isResumable, globalize) : null;
+                const primaryTitle = readableUi ? readableUi.title : (isResumable ? globalize.translate('ButtonResume') : globalize.translate('Play'));
+                const primaryIcon = readableUi ? readableUi.icon : 'play_arrow';
+
+                html += `<button is="paper-icon-button-light" class="listItemImageButton itemAction" data-action="${ItemAction.Resume}" title="${escapeHtml(primaryTitle)}" aria-label="${escapeHtml(primaryTitle)}"><span class="material-icons listItemImageButton-icon ${primaryIcon}" aria-hidden="true"></span></button>`;
             }
 
             const progressHtml = indicators.getProgressBarHtml(item, {

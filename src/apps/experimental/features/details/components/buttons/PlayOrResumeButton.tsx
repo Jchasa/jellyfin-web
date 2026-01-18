@@ -1,6 +1,10 @@
 import React, { FC, useCallback, useMemo } from 'react';
 import IconButton from '@mui/material/IconButton';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -8,6 +12,7 @@ import { ItemAction } from 'constants/itemAction';
 import { useApi } from 'hooks/useApi';
 import { getChannelQuery } from 'hooks/api/liveTvHooks/useGetChannel';
 import globalize from 'lib/globalize';
+import { getReadablePrimaryActionUi, isReadableItem } from 'utils/readableActionUi';
 import { playbackManager } from 'components/playback/playbackmanager';
 import type { ItemDto } from 'types/base/models/item-dto';
 import { ItemKind } from 'types/base/models/item-kind';
@@ -74,18 +79,42 @@ const PlayOrResumeButton: FC<PlayOrResumeButtonProps> = ({
         });
     }, [apiContext, item, playOptions, queryClient]);
 
+    const isReadable = useMemo(() => isReadableItem(item), [item]);
+
+    const readableUi = useMemo(() => {
+        if (!isReadable) return null;
+        return getReadablePrimaryActionUi(item, !!isResumable, globalize);
+    }, [isReadable, item, isResumable]);
+
+    const titleText = readableUi ? readableUi.title : (
+        isResumable ?
+            globalize.translate('ButtonResume') :
+            globalize.translate('Play')
+    );
+
+    const readableIcon = useMemo(() => {
+        if (!readableUi) return null;
+
+        switch (readableUi.icon) {
+            case 'picture_as_pdf':
+                return <PictureAsPdfIcon />;
+            case 'auto_stories':
+                return <AutoStoriesIcon />;
+            case 'collections_bookmark':
+                return <CollectionsBookmarkIcon />;
+            default:
+                return <MenuBookIcon />;
+        }
+    }, [readableUi]);
+
     return (
         <IconButton
             className='button-flat btnPlayOrResume'
             data-action={isResumable ? ItemAction.Resume : ItemAction.Play}
-            title={
-                isResumable ?
-                    globalize.translate('ButtonResume') :
-                    globalize.translate('Play')
-            }
+            title={titleText}
             onClick={onPlayClick}
         >
-            {isResumable ? <ReplayIcon /> : <PlayArrowIcon />}
+            {readableIcon ?? (isResumable ? <ReplayIcon /> : <PlayArrowIcon />)}
         </IconButton>
     );
 };

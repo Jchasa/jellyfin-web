@@ -16,7 +16,7 @@ import globalize from 'lib/globalize';
 import { ServerConnections } from 'lib/jellyfin-apiclient';
 import { getBackdropShape, getPortraitShape, getSquareShape } from 'utils/card';
 import { getItemTypeIcon, getLibraryIcon } from 'utils/image';
-import { getPrimaryActionUi } from 'utils/primaryActionUi';
+import { getReadablePrimaryActionUi, isReadableItem } from 'utils/readableActionUi';
 
 import focusManager from '../focusManager';
 import imageLoader from '../images/imageLoader';
@@ -44,19 +44,6 @@ import {
 } from './cardBuilderUtils';
 
 const enableFocusTransform = !browser.slow && !browser.edge;
-
-function safeTranslate(key, fallback) {
-    try {
-        const translated = globalize.translate(key);
-        if (typeof translated === 'string' && translated.trim().length > 0) {
-            return translated;
-        }
-    } catch (error) {
-        // Missing keys or other localization errors shouldn't break the UI.
-    }
-
-    return fallback || key;
-}
 
 /**
  * Generate the HTML markup for cards for a set of items.
@@ -1000,15 +987,19 @@ function buildCard(index, item, apiClient, options) {
 
         const btnCssClass = 'cardOverlayButton cardOverlayButton-br itemAction';
 
-        const primaryUi = getPrimaryActionUi(item, { action: ItemAction.Play });
-        const primaryLabel = escapeHtml(safeTranslate(primaryUi.labelKey, primaryUi.labelFallback));
+        const isReadable = isReadableItem(item);
+        const isResumable = !!(item.UserData && item.UserData.PlaybackPositionTicks > 0);
+        const readableUi = isReadable ? getReadablePrimaryActionUi(item, isResumable, globalize) : null;
+        const primaryActionTitle = readableUi ? readableUi.title : globalize.translate('Play');
+        const primaryActionIcon = readableUi ? readableUi.icon : 'play_arrow';
+
 
         if (options.centerPlayButton) {
-            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass} cardOverlayButton-centered" data-action="${ItemAction.Play}" title="${primaryLabel}" aria-label="${primaryLabel}"><span class="material-icons cardOverlayButtonIcon ${primaryUi.icon}" aria-hidden="true"></span></button>`;
+            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass} cardOverlayButton-centered" data-action="${ItemAction.Play}" title="${escapeHtml(primaryActionTitle)}"><span class="material-icons cardOverlayButtonIcon ${primaryActionIcon}" aria-hidden="true"></span></button>`;
         }
 
         if (overlayPlayButton && !item.IsPlaceHolder && (item.LocationType !== 'Virtual' || !item.MediaType || item.Type === 'Program') && item.Type !== 'Person') {
-            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Play}" title="${primaryLabel}" aria-label="${primaryLabel}"><span class="material-icons cardOverlayButtonIcon ${primaryUi.icon}" aria-hidden="true"></span></button>`;
+            overlayButtons += `<button is="paper-icon-button-light" class="${btnCssClass}" data-action="${ItemAction.Play}" title="${escapeHtml(primaryActionTitle)}"><span class="material-icons cardOverlayButtonIcon ${primaryActionIcon}" aria-hidden="true"></span></button>`;
         }
 
         if (options.overlayMoreButton) {
@@ -1175,9 +1166,13 @@ function getHoverMenuHtml(item, action) {
     const btnCssClass = 'cardOverlayButton cardOverlayButton-hover itemAction paper-icon-button-light';
 
     if (playbackManager.canPlay(item)) {
-        const primaryUi = getPrimaryActionUi(item, { action: ItemAction.Resume });
-        const primaryLabel = escapeHtml(safeTranslate(primaryUi.labelKey, primaryUi.labelFallback));
-        html += `<button is="paper-icon-button-light" class="${btnCssClass} cardOverlayFab-primary" data-action="${ItemAction.Resume}" title="${primaryLabel}" aria-label="${primaryLabel}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover ${primaryUi.icon}" aria-hidden="true"></span></button>`;
+        const isReadable = isReadableItem(item);
+        const isResumable = !!(item.UserData && item.UserData.PlaybackPositionTicks > 0);
+        const readableUi = isReadable ? getReadablePrimaryActionUi(item, isResumable, globalize) : null;
+        const hoverPrimaryTitle = readableUi ? readableUi.title : (isResumable ? globalize.translate('ButtonResume') : globalize.translate('Play'));
+        const hoverPrimaryIcon = readableUi ? readableUi.icon : 'play_arrow';
+
+        html += `<button is="paper-icon-button-light" class="${btnCssClass} cardOverlayFab-primary" data-action="${ItemAction.Resume}" title="${escapeHtml(hoverPrimaryTitle)}" aria-label="${escapeHtml(hoverPrimaryTitle)}"><span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover ${hoverPrimaryIcon}" aria-hidden="true"></span></button>`;
     }
 
     html += '<div class="cardOverlayButton-br flex">';

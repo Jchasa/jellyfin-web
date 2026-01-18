@@ -33,6 +33,7 @@ import { download } from 'scripts/fileDownloader';
 import libraryMenu from 'scripts/libraryMenu';
 import * as userSettings from 'scripts/settings/userSettings';
 import { getPortraitShape, getSquareShape } from 'utils/card';
+import { getReadablePrimaryActionUi, isReadableItem } from 'utils/readableActionUi';
 import Dashboard from 'utils/dashboard';
 import Events from 'utils/events';
 import { getItemBackdropImageUrl } from 'utils/jellyfin-apiclient/backdropImage';
@@ -348,8 +349,20 @@ function reloadPlayButtons(page, item) {
         const isResumable = item.UserData && item.UserData.PlaybackPositionTicks > 0;
         hideAll(page, 'btnReplay', isResumable);
 
+        const isReadable = isReadableItem(item);
+        const readableUi = isReadable ? getReadablePrimaryActionUi(item, isResumable, globalize) : null;
+
         for (const btnPlay of page.querySelectorAll('.btnPlay')) {
-            if (isResumable) {
+            if (readableUi) {
+                btnPlay.title = readableUi.title;
+
+                const iconEl = btnPlay.querySelector('.detailButton-icon');
+                if (iconEl) {
+                    // Ensure we swap the icon class without accumulating old classes
+                    iconEl.classList.remove('play_arrow');
+                    iconEl.classList.add(readableUi.icon);
+                }
+            } else if (isResumable) {
                 btnPlay.title = globalize.translate('ButtonResume');
             } else {
                 btnPlay.title = globalize.translate('Play');

@@ -17,7 +17,13 @@ const PlayArrowIconButton: FC<PlayArrowIconButtonProps> = ({ className, action, 
         <IconButton
             className={className}
             data-action={action}
-            title={globalize.translate(title)}
+            title={(() => {
+                try {
+                    return globalize.translate(title);
+                } catch (err) {
+                    return title;
+                }
+            })()}
         >
             <PlayArrowIcon className={iconClassName} />
         </IconButton>
