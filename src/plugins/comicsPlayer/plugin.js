@@ -612,3 +612,5 @@ class ArchiveSource {
         this.urlCache.clear();
     }
 }
+
+export default ComicsPlayer;
